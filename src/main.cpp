@@ -11,9 +11,11 @@
 
 #include "./Mesh/Mesh.hpp"
 #include "./Shader/Shader.hpp"
+#include "./Window/Window.hpp"
 
 std::vector<Mesh*> meshList;
 std::vector<Shader*> shaderList;
+Window* window;
 
 static const char* vertexLocation = "./shaders/vertexShader.glsl";
 static const char* fragmentLocation = "./shaders/fragmentShader.glsl";
@@ -56,45 +58,11 @@ void CreateShader() {
 int main() {
   glfwSetErrorCallback(error_glfw);
 
-  //Iniciar o GLFW
-  if (!glfwInit()) {
-    printf("GLFW não foi iniciado \n");
+  window = new Window();
+  if (window->Initialize()) {
+    printf("Erro ao inicializar janela");
     return 1;
-  }
-
-  //Garantir que estamos usando a versão 3.0
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  //Cria a janela
-  GLFWwindow* mainWindow = glfwCreateWindow(800, 600, "Ola Mundo!", NULL, NULL);
-  if (!mainWindow) {
-    printf("GLWF n„o consegiu criar a janela");
-    glfwTerminate();
-    return 1;
-  }
-
-  //Define a janela como principal
-  glfwMakeContextCurrent(mainWindow);
-
-  //Armazena as informaÁıes de tamanho de janela do buffer
-  int bufferWidth, bufferHeigth;
-  glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeigth);
-
-  //GLEW
-  glewExperimental = GL_TRUE;
-  if (glewInit() != GLEW_OK) {
-    printf("Não foi iniciado o GLEW");
-    glfwDestroyWindow(mainWindow);
-    glfwTerminate();
-    return 1;
-  }
-
-  glEnable(GL_DEPTH_TEST); //Habilitar o Depth Test
-
-  glViewport(0, 0, bufferWidth, bufferHeigth);
+  };
 
   //Criar meu triangulo
   CriaTriangulos();
@@ -106,7 +74,7 @@ int main() {
   float size = 0.4f, maxSize = 0.7f, minSize = 0.0f, incSize = 0.01f;
   float angle = 0.0f, maxAngle = 360.0f, minAngle = 0.0f, incAngle = 0.1f;
 
-  while (!glfwWindowShouldClose(mainWindow)) {
+  while (!window->ShouldClose()) {
     //Iniciar os eventos
     glfwPollEvents();
 
@@ -160,12 +128,12 @@ int main() {
       * Calcula a Camera de Projeção 3D
       */
       //Calcular a projeção
-      glm::mat4 projection = glm::perspective(1.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeigth, 0.1f, 100.0f);
+      glm::mat4 projection = glm::perspective(1.0f, window->getBufferWidth() / window->getBufferHeight(), 0.1f, 100.0f);
       //Passar o valor para a entrada uniform Projection
       glUniformMatrix4fv(shader->GetUniformProjection(), 1, GL_FALSE, glm::value_ptr(projection));
 
     glUseProgram(0);
 
-    glfwSwapBuffers(mainWindow);
+    window->SwapBuffers();
   }
 }

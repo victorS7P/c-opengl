@@ -1,11 +1,18 @@
-build: main
+.PHONY: build run clean all
 
-main: ./src/main.cpp
-	g++ `pkg-config --cflags glfw3 glew` -o ./build/main ./src/main.cpp `pkg-config --static --libs glfw3 glew` ./src/Mesh/Mesh.cpp ./src/Shader/Shader.cpp
-	@echo "Execute ./build/main para rodar o programa"
+build:
+	@g++ ./src/main.cpp -o ./build/main  			\
+		`pkg-config --cflags glfw3 glew`  			\
+		`pkg-config --static --libs glfw3 glew` \
+																						\
+		./src/Mesh/Mesh.cpp											\
+		./src/Shader/Shader.cpp									\
+		./src/Window/Window.cpp
 
 run:
 	./build/main
 
 clean:
 	rm ./build/main
+
+all: clean build run
