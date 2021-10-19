@@ -1,13 +1,13 @@
 #include "Window.hpp"
 
-Window::Window () {
-  width = 800;
-  height = 600;
-}
+Window::Window () : Window(800, 600) {}
 
 Window::Window (GLint width_param, GLint height_param) {
+  for (int i = 0; i < 1024; i++) { keys[i] = false; }
+
   width = width_param;
   height = height_param;
+  mouseFirstMove = true;
 }
 
 Window::~Window () {
@@ -69,6 +69,7 @@ void Window::SwapBuffers () {
 
 void Window::CreateCallbacks () {
   glfwSetKeyCallback(window, HandleKeys);
+  glfwSetCursorPosCallback(window, HandleMouse);
 }
 
 void Window::HandleKeys (GLFWwindow* window, int key, int code, int action, int mode) {
@@ -81,12 +82,38 @@ void Window::HandleKeys (GLFWwindow* window, int key, int code, int action, int 
   if (key > 0 && key <= 1024) {
     if (action == GLFW_PRESS) {
       temp->keys[key] = true;
-      printf("press: %i\n", key);
     }
     
     else if (action == GLFW_RELEASE) {
       temp->keys[key] = false;
-      printf("release: %i\n", key);
     }
   }
+}
+
+void Window::HandleMouse (GLFWwindow* window, double xPos, double yPos) {
+  Window* temp = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+  if (temp->mouseFirstMove) {
+    temp->mouseFirstMove = false;
+    temp->lastX = xPos;
+    temp->lastY = yPos;
+  }
+
+  temp->xChange = xPos - temp->lastX;
+  temp->yChange = temp->lastY - yPos;
+
+  temp->lastX = xPos;
+  temp->lastY = yPos;
+}
+
+GLfloat Window::GetXChange() {
+  GLfloat change = xChange;
+  xChange = 0.0f;
+  return change;
+}
+
+GLfloat Window::GetYChange() {
+  GLfloat change = yChange;
+  yChange = 0.0f;
+  return change;
 }

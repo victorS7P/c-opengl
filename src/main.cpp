@@ -12,10 +12,13 @@
 #include "./Mesh/Mesh.hpp"
 #include "./Shader/Shader.hpp"
 #include "./Window/Window.hpp"
+#include "./Camera/Camera.hpp"
 
 std::vector<Mesh*> meshList;
 std::vector<Shader*> shaderList;
+
 Window* window;
+Camera camera;
 
 static const char* vertexLocation = "./shaders/vertexShader.glsl";
 static const char* fragmentLocation = "./shaders/fragmentShader.glsl";
@@ -68,6 +71,13 @@ int main() {
   CriaTriangulos();
   CreateShader();
 
+  //Criar camera
+  camera = Camera(
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    -90.0f, 0.0f, 0.01f, 0.0001f
+  );
+
   //Declaração de variaveis para movimentação do triangulo
   bool direction = true, sizeDirection = true, angleDirection = true;
   float triOffset = 0.0f, maxOffset = 0.7f, minOffset = -0.7f, incOffset = 0.01f;
@@ -77,6 +87,10 @@ int main() {
   while (!window->ShouldClose()) {
     //Iniciar os eventos
     glfwPollEvents();
+
+    //Camera controlar teclado e mouse
+    camera.keyControl(window->getKeys());
+    camera.mouseControl(window->GetXChange(), window->GetYChange());
 
     //Definindo uma cor para nossa janela
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -131,6 +145,7 @@ int main() {
       glm::mat4 projection = glm::perspective(1.0f, window->getBufferWidth() / window->getBufferHeight(), 0.1f, 100.0f);
       //Passar o valor para a entrada uniform Projection
       glUniformMatrix4fv(shader->GetUniformProjection(), 1, GL_FALSE, glm::value_ptr(projection));
+      glUniformMatrix4fv(shader->GetUniformView(), 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 
     glUseProgram(0);
 

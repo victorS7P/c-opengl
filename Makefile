@@ -7,7 +7,8 @@ build:
 																						\
 		./src/Mesh/Mesh.cpp											\
 		./src/Shader/Shader.cpp									\
-		./src/Window/Window.cpp
+		./src/Window/Window.cpp									\
+		./src/Camera/Camera.cpp
 
 run:
 	./build/main
