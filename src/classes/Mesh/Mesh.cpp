@@ -36,9 +36,13 @@ void Mesh::CreateMesh(GLfloat *vertices, unsigned int numOfVertices, unsigned in
       glBindBuffer(GL_ARRAY_BUFFER, VBO); //Registra o VBO
 
       glBufferData(GL_ARRAY_BUFFER, numOfVertices, vertices, GL_STATIC_DRAW); //Registro os atributos no VBO
-      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 5, 0);
+
+      // Pontos da textura:
+      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 5, (void*)(sizeof(vertices[0]) * 3));
 
       glEnableVertexAttribArray(0); //0: shader location
+      glEnableVertexAttribArray(1); //0: shader location
     glBindBuffer(GL_ARRAY_BUFFER, 0); //remove o acesso do VBO
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //remove o acesso do IBO

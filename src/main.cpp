@@ -1,3 +1,5 @@
+﻿#define STB_IMAGE_IMPLEMENTATION
+
 #include <iostream>
 #include <string.h>
 #include <vector>
@@ -9,16 +11,19 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "./classes/Mesh/Mesh.hpp"
-#include "./classes/Shader/Shader.hpp"
-#include "./classes/Window/Window.hpp"
-#include "./classes/Camera/Camera.hpp"
+#include "classes/Mesh/Mesh.hpp"
+#include "classes/Shader/Shader.hpp"
+#include "classes/Window/Window.hpp"
+#include "classes/Camera/Camera.hpp"
+#include "classes/Texture/Texture.hpp"
 
 std::vector<Mesh*> meshList;
 std::vector<Shader*> shaderList;
 
 Window* window;
 Camera camera;
+
+Texture rockTexture;
 
 static const char* vertexLocation = "./shaders/vertexShader.glsl";
 static const char* fragmentLocation = "./shaders/fragmentShader.glsl";
@@ -29,18 +34,17 @@ void error_glfw(int error, const char* desc) {
 
 void CriaTriangulos() {
   GLfloat vertices[] = {
-    //x      y     z
-    -1.0f, -1.0f, 0.0f,  // Vertice 0 (Preto)
-    0.0f, 1.0f, 0.0f,    // Vertice 1 (Verde)
-    1.0f, -1.0f, 0.0f,   // Vertice 2 (Vermelho)
-    0.0f, -1.0f, 1.0f     // Vertice 3 (Azul)
+    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Vertice 0
+     0.0f,  1.0f, 0.0f, 0.5f, 1.0f, // Vertice 1
+     1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // Vertice 2
+     0.0f, -1.0f, 1.0f, 0.5f, 0.0f  // Vertice 3
   };
 
   unsigned int indices[] = {
-    0, 1, 2,        //Base da triangulo
-    1, 2, 3,        //Base da direita
-    0, 1, 3,        //Base da esquerda
-    0, 2, 3         //Base de baixo
+    0, 1, 2,  //Base da triangulo
+    1, 2, 3,  //Base da direita
+    0, 1, 3,  //Base da esquerda
+    0, 2, 3   //Base de baixo
   };
 
   Mesh* obj1 = new Mesh();
@@ -61,7 +65,7 @@ void CreateShader() {
 int main() {
   glfwSetErrorCallback(error_glfw);
 
-  window = new Window();
+  window = new Window(1024, 768);
   if (window->Initialize()) {
     printf("Erro ao inicializar janela");
     return 1;
@@ -75,8 +79,11 @@ int main() {
   camera = Camera(
     glm::vec3(0.0f, 0.0f, 0.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
-    -90.0f, 0.0f, 0.01f, 0.0001f
+    -90.0f, 0.0f, 0.01f, 0.000001f
   );
+
+  rockTexture = Texture((char*) "src/assets/textures/rock.png");
+  rockTexture.loadTexture();
 
   //Declaração de variaveis para movimentação do triangulo
   bool direction = true, sizeDirection = true, angleDirection = true;
@@ -99,6 +106,7 @@ int main() {
     //Recriar a função
     Shader * shader = shaderList[0];
     shader->UseProgram();
+    rockTexture.useTexture();
 
       /*
       * Calcula a fisica do nosso jogo
