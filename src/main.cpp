@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <string.h>
 #include <vector>
 
@@ -9,10 +9,10 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "./Mesh/Mesh.hpp"
-#include "./Shader/Shader.hpp"
-#include "./Window/Window.hpp"
-#include "./Camera/Camera.hpp"
+#include "./classes/Mesh/Mesh.hpp"
+#include "./classes/Shader/Shader.hpp"
+#include "./classes/Window/Window.hpp"
+#include "./classes/Camera/Camera.hpp"
 
 std::vector<Mesh*> meshList;
 std::vector<Shader*> shaderList;
