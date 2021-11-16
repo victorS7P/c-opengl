@@ -24,6 +24,8 @@ Window* window;
 Camera camera;
 
 Texture rockTexture;
+Texture grassTexture;
+Texture woodTexture;
 
 static const char* vertexLocation = "./shaders/vertexShader.glsl";
 static const char* fragmentLocation = "./shaders/fragmentShader.glsl";
@@ -47,13 +49,55 @@ void CriaTriangulos() {
     0, 2, 3   //Base de baixo
   };
 
+  GLfloat floorVertices[] = {
+    -10.0f, 0.0f, -10.0f,  0.0f,  0.0f,
+    -10.0f, 0.0f,  10.0f, 10.0f,  0.0f,
+     10.0f, 0.0f,  10.0f, 10.0f, 10.0f,
+     10.0f, 0.0f, -10.0f,  0.0f, 10.0f,
+  };
+
+  unsigned int floorIndices[] = {
+    0, 1, 3,
+    1, 2, 3
+  };
+
+  GLfloat cubeVertices[] = {
+    -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+     1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+    -1.0f,  1.0f, -1.0f, 0.0f, 1.0f,
+     1.0f,  1.0f, -1.0f, 1.0f, 1.0f,
+    -1.0f, -1.0f,  1.0f, 0.25f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.75f, 0.0f,
+    -1.0f,  1.0f,  1.0f, 0.25f, 1.0f,
+     1.0f,  1.0f,  1.0f, 0.75f, 1.0f
+  };
+
+  unsigned int cubeIndices[] = {
+    0, 1, 3,
+    0, 2, 3,
+    0, 1, 5,
+    0, 4, 5,
+    0, 2, 4,
+    2, 4, 6,
+    4, 5, 7,
+    4, 6, 7,
+    2, 3, 7, 
+    2, 6, 7,
+    1, 3, 5,
+    3, 5, 7
+  };
+
   Mesh* obj1 = new Mesh();
   obj1->CreateMesh(vertices, sizeof(vertices), indices, sizeof(indices));
   meshList.push_back(obj1);
 
-  Mesh* obj2 = new Mesh();
-  obj2->CreateMesh(vertices, sizeof(vertices), indices, sizeof(indices));
-  meshList.push_back(obj2);
+  Mesh* floor = new Mesh();
+  floor->CreateMesh(floorVertices, sizeof(floorVertices), floorIndices, sizeof(floorIndices));
+  meshList.push_back(floor);
+
+  Mesh* cube = new Mesh();
+  cube->CreateMesh(cubeVertices, sizeof(cubeVertices), cubeIndices, sizeof(cubeIndices));
+  meshList.push_back(cube);
 }
 
 void CreateShader() {
@@ -65,7 +109,7 @@ void CreateShader() {
 int main() {
   glfwSetErrorCallback(error_glfw);
 
-  window = new Window(1024, 768);
+  window = new Window(1200, 768);
   if (window->Initialize()) {
     printf("Erro ao inicializar janela");
     return 1;
@@ -77,13 +121,19 @@ int main() {
 
   //Criar camera
   camera = Camera(
-    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(0.0f, 1.0f, 0.0f),
     -90.0f, 0.0f, 0.01f, 0.000001f
   );
 
   rockTexture = Texture((char*) "src/assets/textures/rock.png");
   rockTexture.loadTexture();
+
+  grassTexture = Texture((char*) "src/assets/textures/grass.png");
+  grassTexture.loadTexture();
+
+  woodTexture = Texture((char*) "src/assets/textures/wood.png");
+  woodTexture.loadTexture();
 
   //Declaração de variaveis para movimentação do triangulo
   bool direction = true, sizeDirection = true, angleDirection = true;
@@ -100,13 +150,12 @@ int main() {
     camera.mouseControl(window->GetXChange(), window->GetYChange());
 
     //Definindo uma cor para nossa janela
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //Recriar a função
     Shader * shader = shaderList[0];
     shader->UseProgram();
-    rockTexture.useTexture();
 
       /*
       * Calcula a fisica do nosso jogo
@@ -128,23 +177,34 @@ int main() {
       */
       //criar uma matriz 4x4 (1.0f)
       glm::mat4 model(1.0f);
-      model = glm::translate(model, glm::vec3(0.0f, -0.5f, -2.5f)); //Movimentações do triangulo
-      model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f)); //Tamanho do triangulo
+      model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.5f)); //Movimentações do triangulo
       model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); //Rotação
 
       glUniformMatrix4fv(shader->GetUniformModel(), 1, GL_FALSE, glm::value_ptr(model)); //Passa os valores para a entrada uniform Model
+      rockTexture.useTexture();
       meshList[0]->RenderMesh(); //Desenha o triangulo 3D (Renderização do piramide)
 
       /*
-      * Piramide 2
+      * Floor
       */
       model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(0.0f, 0.75f, -2.5f)); //Movimentações do triangulo
-      model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f)); //Tamanho do triangulo
-      model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, -1.0f, 0.0f)); //Rotação
-      glUniformMatrix4fv(shader->GetUniformModel(), 1, GL_FALSE, glm::value_ptr(model)); //Passa os valores para a entrada uniform Model
+      model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 
+      glUniformMatrix4fv(shader->GetUniformModel(), 1, GL_FALSE, glm::value_ptr(model));
+      grassTexture.useTexture();
       meshList[1]->RenderMesh();
+
+      /*
+      * Cube
+      */
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(2.0f, 0.7f, -6.0f));
+      model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+      model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+      glUniformMatrix4fv(shader->GetUniformModel(), 1, GL_FALSE, glm::value_ptr(model));
+      woodTexture.useTexture();
+      meshList[2]->RenderMesh();
 
       /*
       * Calcula a Camera de Projeção 3D
